@@ -15,3 +15,7 @@
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/ref/fileHelper.dll
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.pdb
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.genruntimeconfig.cache
+<<<<<<< HEAD
+=======
+/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.csproj.AssemblyReference.cache
+>>>>>>> master
