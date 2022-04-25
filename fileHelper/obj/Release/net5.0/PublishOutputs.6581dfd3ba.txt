@@ -1,0 +1,7 @@
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/fileHelper
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/Program.cs
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/fileHelper.dll
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/fileHelper.deps.json
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/fileHelper.runtimeconfig.json
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/fileHelper.pdb
+/Users/mira/Projects/fileHelper/fileHelper/bin/Release/net5.0/publish/McMaster.Extensions.CommandLineUtils.dll

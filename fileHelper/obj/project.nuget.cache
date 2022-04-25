@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "VMyJRptFTvjnJqlmnaBPX1Zm/S4m84NQueaFrnfpfVmKBBP/DFskaZkNjpgT3DE40Pc/FxpwdeVje1kn2bV8OQ==",
+  "success": true,
+  "projectFilePath": "/Users/mira/Projects/fileHelper/fileHelper/fileHelper.csproj",
+  "expectedPackageFiles": [
+    "/Users/mira/.nuget/packages/mcmaster.extensions.commandlineutils/4.0.1/mcmaster.extensions.commandlineutils.4.0.1.nupkg.sha512",
+    "/Users/mira/.nuget/packages/system.componentmodel.annotations/5.0.0/system.componentmodel.annotations.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
