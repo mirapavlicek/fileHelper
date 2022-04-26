@@ -183,7 +183,7 @@ namespace fileHelper
             {
                 webRequestUrl = web;
             }
-
+            LogTrace(TraceLevel.Verbose, $"Url: {webRequestUrl}");
             //Check web valid
 
             bool webResult = Uri.TryCreate(webRequestUrl, UriKind.Absolute, out serviceWeb)
@@ -209,7 +209,7 @@ namespace fileHelper
                 _endPoint = endPoint;
 
             }
-
+            LogTrace(TraceLevel.Verbose, $"EndPoint: {_endPoint}");
 
 
             if (infinity == 0)
