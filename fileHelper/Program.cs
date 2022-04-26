@@ -342,7 +342,7 @@ namespace fileHelper
                             formData.Add(new StringContent(acnumber), "acnumber");
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         LogTrace(TraceLevel.Verbose, $"No more data parset to file (accesion number, indentificator)");
                     }

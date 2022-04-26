@@ -70,6 +70,12 @@ namespace fileHelper
         [Option("--timeout", Description = "Timeout in ms (miliseconds) for web client (default: 5000 ms). Minimum is 100 ms maximum is 60 000 ms")]
         private int timeOut { get; set; }
 
+        [Option("--user", Description = "Connection username")]
+        private string user { get; set; }
+
+        [Option("--pass", Description = "Connection password")]
+        private string password { get; set; }
+
         /// <summary>
         /// Property types of ValueTuple{bool,T} translate to CommandOptionType.SingleOrNoValue.
         /// Input            | Value
@@ -309,6 +315,16 @@ namespace fileHelper
             try
             {
 
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+                {
+
+                    user = "inotify";
+                    password = "pWDxGjr9Df2MUWZQ";
+                }
+
+                var authenticationString = $"{user}:{password}";
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
+
 
                 using (_httpClient = new HttpClient(clientHandler))
                 using (var formData = new MultipartFormDataContent())
@@ -348,12 +364,13 @@ namespace fileHelper
                     }    
 
                     _httpClient.Timeout = TimeSpan.FromMilliseconds(_timeOut);
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
 
                     var response = await _httpClient.PostAsync($"{web}{endpoint}", formData);
                     if (!response.IsSuccessStatusCode)
                     {
                         LogTrace(TraceLevel.Verbose, $"Error send fail {fileName}");
-                        LogTrace(TraceLevel.Verbose, $"Error {response.Content.ToString()}");
+                        LogTrace(TraceLevel.Verbose, $"Error {response.ReasonPhrase.ToString()}");
 
                         if (moveError is true)
                         {
