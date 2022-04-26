@@ -34,7 +34,7 @@ namespace fileHelper
         [Option("--infinity", Description = "infinity looping of scanning infintiy:0 is defualt, eg. infinity:5, as number of loops")]
         private int infinity { get; }
 
-        [Option("--delay", Description = "deley of loop,  default: 500ms eg. delay:2000 for 2s delay")]
+        [Option("--delay", Description = "delay of loop,  default: 500ms eg. delay:2000 for 2s delay")]
         private int delay { get; }
 
         [Option("--web", Description = "weblink for webservice eg.: https://10.84.12.235/webapi/inotify/")]
@@ -69,6 +69,12 @@ namespace fileHelper
 
         [Option("--timeout", Description = "Timeout in ms (miliseconds) for web client (default: 5000 ms). Minimum is 100 ms maximum is 60 000 ms")]
         private int timeOut { get; set; }
+
+        [Option("--user", Description = "Connection username")]
+        private string user { get; set; }
+
+        [Option("--pass", Description = "Connection password")]
+        private string password { get; set; }
 
         /// <summary>
         /// Property types of ValueTuple{bool,T} translate to CommandOptionType.SingleOrNoValue.
@@ -305,8 +311,19 @@ namespace fileHelper
             HttpClientHandler clientHandler = new HttpClientHandler();
             clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
 
+
             try
             {
+
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+                {
+
+                    user = "inotify";
+                    password = "pWDxGjr9Df2MUWZQ";
+                }
+
+                var authenticationString = $"{user}:{password}";
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
 
 
                 using (_httpClient = new HttpClient(clientHandler))
@@ -314,8 +331,22 @@ namespace fileHelper
                 {
                     formData.Add(new StringContent(fileName), "file", "file");
                     formData.Add(new StreamContent(ms), "filebyte", "filebyte");
-                    formData.Add(new StringContent(ident), "identifacator");
-                    formData.Add(new StringContent(acnumber), "acnumber");
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(ident))
+                        {
+                            formData.Add(new StringContent(ident), "identifacator");
+                        }
+                        if (!string.IsNullOrEmpty(acnumber))
+                        {
+                            formData.Add(new StringContent(acnumber), "acnumber");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogTrace(TraceLevel.Verbose, $"No more data parset to file (accesion number, indentificator)");
+                    }
+                   
 
                     int _timeOut = 5000;
 
@@ -333,11 +364,13 @@ namespace fileHelper
                     }    
 
                     _httpClient.Timeout = TimeSpan.FromMilliseconds(_timeOut);
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
 
                     var response = await _httpClient.PostAsync($"{web}{endpoint}", formData);
                     if (!response.IsSuccessStatusCode)
                     {
                         LogTrace(TraceLevel.Verbose, $"Error send fail {fileName}");
+                        LogTrace(TraceLevel.Verbose, $"Error {response.ReasonPhrase.ToString()}");
 
                         if (moveError is true)
                         {

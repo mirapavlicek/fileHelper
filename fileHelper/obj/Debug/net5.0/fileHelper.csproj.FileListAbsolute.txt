@@ -1,3 +1,22 @@
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/Program.cs
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.exe
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.deps.json
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.runtimeconfig.json
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.runtimeconfig.dev.json
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.dll
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.pdb
+Z:/Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/McMaster.Extensions.CommandLineUtils.dll
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.csproj.AssemblyReference.cache
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.GeneratedMSBuildEditorConfig.editorconfig
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.AssemblyInfoInputs.cache
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.AssemblyInfo.cs
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.csproj.CoreCompileInputs.cache
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.csproj.CopyComplete
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.dll
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/refint/fileHelper.dll
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.pdb
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.genruntimeconfig.cache
+Z:/Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/ref/fileHelper.dll
 /Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/Program.cs
 /Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.deps.json
 /Users/mira/Projects/fileHelper/fileHelper/bin/Debug/net5.0/fileHelper.runtimeconfig.json
@@ -15,7 +34,4 @@
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/ref/fileHelper.dll
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.pdb
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.genruntimeconfig.cache
-<<<<<<< HEAD
-=======
 /Users/mira/Projects/fileHelper/fileHelper/obj/Debug/net5.0/fileHelper.csproj.AssemblyReference.cache
->>>>>>> master

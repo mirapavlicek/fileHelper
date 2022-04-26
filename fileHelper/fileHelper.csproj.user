@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>/Users/mira/Downloads/test --web https://hoodd.nnh.local/csp/zvoj/webapi/inotify --ident 123 --acnumber 998877 --trace:verbose</StartArguments>
+    <StartArguments>/Users/mira/Downloads/test --web https://hoodd.nnh.local/api/rest/inotify --trace:verbose --recoursive --delay:1000</StartArguments>
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
 </Project>
