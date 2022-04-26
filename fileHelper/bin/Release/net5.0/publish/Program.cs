@@ -117,11 +117,11 @@ namespace fileHelper
             //Check Done Folder and Error folder
             if (string.IsNullOrEmpty(doneFolder))
             {
-                doneFolder = "done";
+                doneFolder = "_done";
             }
             if (string.IsNullOrEmpty(errorFolder))
             {
-                errorFolder = "error";
+                errorFolder = "_error";
             }
 
 
@@ -283,7 +283,11 @@ namespace fileHelper
             {
                 string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
                 foreach (string subdirectory in subdirectoryEntries)
+                    if (!subdirectory.Contains(doneFolder) && !subdirectory.Contains(errorFolder))
+                    {
                     await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber);
+                    }
+                    
             }
             return 0;
 
@@ -342,7 +346,7 @@ namespace fileHelper
                             formData.Add(new StringContent(acnumber), "acnumber");
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         LogTrace(TraceLevel.Verbose, $"No more data parset to file (accesion number, indentificator)");
                     }
@@ -428,6 +432,7 @@ namespace fileHelper
             */
             await ms.DisposeAsync();
             ms.Close();
+            
             return 0;
 
 
