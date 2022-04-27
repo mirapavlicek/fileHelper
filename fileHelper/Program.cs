@@ -299,14 +299,8 @@ namespace fileHelper
 
             LogTrace(TraceLevel.Verbose, $"Processed file {path}");
 
-            MemoryStream ms = new MemoryStream();
-            LogTrace(TraceLevel.Verbose, $"Memory stream created");
 
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
-            await fs.CopyToAsync(ms);
-            LogTrace(TraceLevel.Verbose, $"File writed to memory");
-            await fs.DisposeAsync();
-            fs.Close();
 
             string fileName = Path.GetFileName(path);
             web = web.Substring(web.Length - 1) != "/" ? $"{web}/" : web;
@@ -334,7 +328,7 @@ namespace fileHelper
                 using (var formData = new MultipartFormDataContent())
                 {
                     formData.Add(new StringContent(fileName), "file", "file");
-                    formData.Add(new StreamContent(ms), "filebyte", "filebyte");
+                    formData.Add(new StreamContent(fs), "filebyte", "filebyte");
                     try
                     {
                         if (!string.IsNullOrEmpty(ident))
@@ -392,8 +386,6 @@ namespace fileHelper
                             }
                         }
 
-                        await ms.DisposeAsync();
-                        ms.Close();
                         return 1;
                     }
 
@@ -430,8 +422,6 @@ namespace fileHelper
          result.Content.CopyToAsync(ms).Wait();
          LogTrace(TraceLevel.Verbose, $"Výsledek {result.IsSuccessStatusCode}");
             */
-            await ms.DisposeAsync();
-            ms.Close();
             
             return 0;
 
