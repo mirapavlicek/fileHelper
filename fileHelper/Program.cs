@@ -216,7 +216,7 @@ namespace fileHelper
             {
                 while (keepRunning == true)
                 {
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
                     await Task.Delay(taskDelay);
                 }
 
@@ -229,19 +229,19 @@ namespace fileHelper
                 for (int i = 1; i <= infinity; i++)
                 {
                     LogTrace(TraceLevel.Verbose, $"Loop {i}/{infinity}");
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
                     await Task.Delay(taskDelay);
                 }
             }
             else if (String.IsNullOrEmpty(filename))
             {
                 LogTrace(TraceLevel.Verbose, $"Process file {folder}/{filename}");
-                await ProcessFile(folder+"/"+filename, web, _endPoint, ident, acnumber);
+                await ProcessFile(folder+"/"+filename, web, _endPoint, ident, acnumber,ocrBar);
             }
             else
             {
 
-                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber);
+                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
             }
             return 0;
 
@@ -257,7 +257,7 @@ namespace fileHelper
             }
         }
 
-        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "")
+        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "", string ocrBar="")
         {
             if (filetype.Length > 8 || filetype.Length < 3)
             {
@@ -274,7 +274,7 @@ namespace fileHelper
             // Process the list of files found in the directory.
             string[] fileEntries = Directory.GetFiles(targetDirectory, filetype);
             foreach (string fileName in fileEntries)
-                await ProcessFile(fileName, web, endpoint, ident, acnumber);
+                await ProcessFile(fileName, web, endpoint, ident, acnumber,ocrBar);
 
 
 
@@ -285,7 +285,7 @@ namespace fileHelper
                 foreach (string subdirectory in subdirectoryEntries)
                     if (!subdirectory.Contains(doneFolder) && !subdirectory.Contains(errorFolder))
                     {
-                    await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber);
+                    await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber,ocrBar);
                     }
                     
             }
@@ -294,7 +294,7 @@ namespace fileHelper
         }
 
 
-        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber)
+        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber,string ocrBar)
         {
 
             LogTrace(TraceLevel.Verbose, $"Processed file {path}");
@@ -339,6 +339,11 @@ namespace fileHelper
                         {
                             formData.Add(new StringContent(acnumber), "acnumber");
                         }
+                        if (!string.IsNullOrEmpty(ocrBar))
+                        {
+                            formData.Add(new StringContent(ocrBar), "ocrbar");
+                        }
+
                     }
                     catch (Exception)
                     {
