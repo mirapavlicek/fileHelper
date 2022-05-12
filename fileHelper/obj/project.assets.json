@@ -517,7 +517,7 @@
       "outputPath": "/Users/mira/Projects/fileHelper/fileHelper/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/mira/.nuget/NuGet/NuGet.Config"
+        "/Users/mira/.config/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
