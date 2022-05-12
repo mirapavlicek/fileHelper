@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Miroslav Pavlíček</Authors>
     <Copyright>Nemocnice na Homolce</Copyright>
     <Owners>Miroslav Pavlíček</Owners>
@@ -18,9 +18,11 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="McMaster.Extensions.CommandLineUtils" />
+    <None Remove="System.Security.Permissions" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Program.cs">

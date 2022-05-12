@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.VisualBasic;
+using System.Security.Permissions;
 
 namespace fileHelper
 {
@@ -61,8 +62,8 @@ namespace fileHelper
         [Option("--error", Description = "Error folder - default error ")]
         private string errorFolder { get; set; }
 
-        [Option("--moveerror", Description = "Move error files to error folder 1 - yes, 0 - no")]
-        private bool moveError { get; set; }
+        [Option("--nomoveerror", Description = "Move error files to error folder 1 - yes, 0 - no")]
+        private bool noMoveError { get; set; }
 
         [Option("--moveExternal", Description = "Move done and error files to folder in another place (default: Search folder")]
         private bool moveExt { get; set; }
@@ -123,6 +124,8 @@ namespace fileHelper
             {
                 errorFolder = "_error";
             }
+
+           
 
 
             if (!Directory.Exists(Path.Combine(folder,doneFolder)))
@@ -261,18 +264,15 @@ namespace fileHelper
         {
             if (filetype.Length > 8 || filetype.Length < 3)
             {
-                filetype = "*.pdf";
+                filetype = "pdf";
             }
-            else
-            {
-                filetype = $"*.{filetype}";
-            }
+          
 
 
 
 
             // Process the list of files found in the directory.
-            string[] fileEntries = Directory.GetFiles(targetDirectory, filetype);
+            string[] fileEntries = Directory.GetFiles(targetDirectory, $"*.{filetype}");
             foreach (string fileName in fileEntries)
                 await ProcessFile(fileName, web, endpoint, ident, acnumber,ocrBar);
 
@@ -372,10 +372,12 @@ namespace fileHelper
                     var response = await _httpClient.PostAsync($"{web}{endpoint}", formData);
                     if (!response.IsSuccessStatusCode)
                     {
-                        LogTrace(TraceLevel.Verbose, $"Error send fail {fileName}");
-                        LogTrace(TraceLevel.Verbose, $"Error {response.ReasonPhrase.ToString()}");
+                        LogTrace(TraceLevel.Info, $"Error send fail {fileName}");
+                        LogTrace(TraceLevel.Verbose, $"Error Phrase: {response.ReasonPhrase.ToString()}");
+                        LogTrace(TraceLevel.Verbose, $"Error Request: {response.RequestMessage.ToString()}");
+                        LogTrace(TraceLevel.Verbose, $"Error Content: {response.Content.ToString()}");
 
-                        if (moveError is true)
+                        if (noMoveError is false)
                         {
                             //Move error files
                             try
