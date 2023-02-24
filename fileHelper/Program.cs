@@ -83,8 +83,11 @@ namespace fileHelper
         [Option("--pass", Description = "Connection password")]
         private string password { get; set; }
 
-        [Option("--splitpdf", Description = "Split pdf to files - splitpdf:1")]
+        [Option("--splitpdf", Description = "Split pdf to files")]
         private bool splitpdf { get; }
+
+        [Option("--reqtype", Description = "Request type --reqtype:REQUEST")]
+        string reqtype { get; }
 
         /// <summary>
         /// Property types of ValueTuple{bool,T} translate to CommandOptionType.SingleOrNoValue.
@@ -228,7 +231,7 @@ namespace fileHelper
             {
                 while (keepRunning == true)
                 {
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf,reqtype);
                     await Task.Delay(taskDelay);
                 }
 
@@ -241,7 +244,7 @@ namespace fileHelper
                 for (int i = 1; i <= infinity; i++)
                 {
                     LogTrace(TraceLevel.Verbose, $"Loop {i}/{infinity}");
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf,reqtype);
                     await Task.Delay(taskDelay);
                     GC.Collect();
                 }
@@ -249,12 +252,12 @@ namespace fileHelper
             else if (String.IsNullOrEmpty(filename))
             {
                 LogTrace(TraceLevel.Verbose, $"Process file {folder}/{filename}");
-                await ProcessFile(folder + "/" + filename, web, _endPoint, ident, acnumber, ocrBar, splitpdf);
+                await ProcessFile(folder + "/" + filename, web, _endPoint, ident, acnumber, ocrBar, splitpdf,reqtype);
             }
             else
             {
 
-                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
+                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf,reqtype);
             }
             return 0;
 
@@ -270,7 +273,7 @@ namespace fileHelper
             }
         }
 
-        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "", string ocrBar = "", bool splitPdf = false)
+        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "", string ocrBar = "", bool splitPdf = false,string reqtype = "")
         {
             if (filetype.Length > 8 || filetype.Length < 3)
             {
@@ -284,7 +287,7 @@ namespace fileHelper
             // Process the list of files found in the directory.
             string[] fileEntries = Directory.GetFiles(targetDirectory, $"*.{filetype}");
             foreach (string fileName in fileEntries)
-                await ProcessFile(fileName, web, endpoint, ident, acnumber, ocrBar, splitPdf);
+                await ProcessFile(fileName, web, endpoint, ident, acnumber, ocrBar, splitPdf,reqtype);
 
 
 
@@ -295,7 +298,7 @@ namespace fileHelper
                 foreach (string subdirectory in subdirectoryEntries)
                     if (!subdirectory.Contains(doneFolder) && !subdirectory.Contains(errorFolder))
                     {
-                        await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber, ocrBar, splitPdf);
+                        await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber, ocrBar, splitPdf,reqtype);
                     }
 
             }
@@ -304,7 +307,7 @@ namespace fileHelper
         }
 
 
-        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber, string ocrBar, bool splitPdf)
+        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber, string ocrBar, bool splitPdf,string reqtype)
         {
 
             LogTrace(TraceLevel.Verbose, $"Processed file {path}");
@@ -344,7 +347,7 @@ namespace fileHelper
                     string[] fileEntries = Directory.GetFiles(Path.GetTempPath(), $"*.pdf");
                     foreach (string fileNameprocess in fileEntries)
                     {
-                        await ProcessFile(fileNameprocess, web, endpoint, ident, acnumber, ocrBar, false);
+                        await ProcessFile(fileNameprocess, web, endpoint, ident, acnumber, ocrBar, false,reqtype);
                         if (File.Exists(fileNameprocess))
                             File.Delete(fileNameprocess);
                         LogTrace(TraceLevel.Verbose, $"Deleted file {fileNameprocess}");
@@ -407,6 +410,10 @@ namespace fileHelper
                             if (!string.IsNullOrEmpty(ocrBar))
                             {
                                 formData.Add(new StringContent(ocrBar), "ocrbar");
+                            }
+                            if (!string.IsNullOrEmpty(reqtype))
+                            {
+                                formData.Add(new StringContent(reqtype), "reqtype");
                             }
 
                         }
