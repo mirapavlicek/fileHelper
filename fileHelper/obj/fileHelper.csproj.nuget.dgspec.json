@@ -14,7 +14,7 @@
         "outputPath": "/Users/mira/Projects/fileHelper/fileHelper/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/mira/.config/NuGet/NuGet.Config"
+          "/Users/mira/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
@@ -40,11 +40,15 @@
           "dependencies": {
             "McMaster.Extensions.CommandLineUtils": {
               "target": "Package",
-              "version": "[4.0.1, )"
+              "version": "[4.0.2, )"
             },
             "System.Security.Permissions": {
               "target": "Package",
-              "version": "[5.0.0, )"
+              "version": "[7.0.0, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[7.2.5, )"
             }
           },
           "imports": [
@@ -53,7 +57,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -62,7 +67,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/x64/sdk/6.0.202/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.103/RuntimeIdentifierGraph.json"
         }
       }
     }

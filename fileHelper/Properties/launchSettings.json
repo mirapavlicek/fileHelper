@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "fileHelper": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\inotify\\data --trace:verbose --infinity:1 --recoursive --delay:1000"
+    }
+  }
+}

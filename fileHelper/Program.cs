@@ -10,6 +10,12 @@ using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.VisualBasic;
 using System.Security.Permissions;
+using iText;
+using iText.Kernel.Pdf;
+using iText.Kernel.Utils;
+using iText.Pdfa;
+using System.Collections.Generic;
+using Microsoft.VisualBasic.FileIO;
 
 namespace fileHelper
 {
@@ -77,6 +83,9 @@ namespace fileHelper
         [Option("--pass", Description = "Connection password")]
         private string password { get; set; }
 
+        [Option("--splitpdf", Description = "Split pdf to files - splitpdf:1")]
+        private bool splitpdf { get; }
+
         /// <summary>
         /// Property types of ValueTuple{bool,T} translate to CommandOptionType.SingleOrNoValue.
         /// Input            | Value
@@ -112,8 +121,8 @@ namespace fileHelper
                 Console.Error.WriteLine($"Folder not exist");
                 return 1;
             }
-         
-            
+
+
 
             //Check Done Folder and Error folder
             if (string.IsNullOrEmpty(doneFolder))
@@ -125,10 +134,10 @@ namespace fileHelper
                 errorFolder = "_error";
             }
 
-           
 
 
-            if (!Directory.Exists(Path.Combine(folder,doneFolder)))
+
+            if (!Directory.Exists(Path.Combine(folder, doneFolder)))
             {
                 try
                 {
@@ -219,7 +228,7 @@ namespace fileHelper
             {
                 while (keepRunning == true)
                 {
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
                     await Task.Delay(taskDelay);
                 }
 
@@ -232,19 +241,20 @@ namespace fileHelper
                 for (int i = 1; i <= infinity; i++)
                 {
                     LogTrace(TraceLevel.Verbose, $"Loop {i}/{infinity}");
-                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
+                    await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
                     await Task.Delay(taskDelay);
+                    GC.Collect();
                 }
             }
             else if (String.IsNullOrEmpty(filename))
             {
                 LogTrace(TraceLevel.Verbose, $"Process file {folder}/{filename}");
-                await ProcessFile(folder+"/"+filename, web, _endPoint, ident, acnumber,ocrBar);
+                await ProcessFile(folder + "/" + filename, web, _endPoint, ident, acnumber, ocrBar, splitpdf);
             }
             else
             {
 
-                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber,ocrBar);
+                await ProcessDirectory(folder, recoursive, fileType is null ? "pdf" : fileType, webRequestUrl, _endPoint, ident, acnumber, ocrBar, splitpdf);
             }
             return 0;
 
@@ -260,13 +270,13 @@ namespace fileHelper
             }
         }
 
-        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "", string ocrBar="")
+        public async Task<int> ProcessDirectory(string targetDirectory, bool recoursion, string filetype = "pdf", string web = "https://10.84.12.235:57782/webapi/inotify/", string endpoint = "", string ident = "", string acnumber = "", string ocrBar = "", bool splitPdf = false)
         {
             if (filetype.Length > 8 || filetype.Length < 3)
             {
                 filetype = "pdf";
             }
-          
+
 
 
 
@@ -274,7 +284,7 @@ namespace fileHelper
             // Process the list of files found in the directory.
             string[] fileEntries = Directory.GetFiles(targetDirectory, $"*.{filetype}");
             foreach (string fileName in fileEntries)
-                await ProcessFile(fileName, web, endpoint, ident, acnumber,ocrBar);
+                await ProcessFile(fileName, web, endpoint, ident, acnumber, ocrBar, splitPdf);
 
 
 
@@ -285,19 +295,20 @@ namespace fileHelper
                 foreach (string subdirectory in subdirectoryEntries)
                     if (!subdirectory.Contains(doneFolder) && !subdirectory.Contains(errorFolder))
                     {
-                    await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber,ocrBar);
+                        await ProcessDirectory(subdirectory, recoursion, filetype, web, endpoint, ident, acnumber, ocrBar, splitPdf);
                     }
-                    
+
             }
             return 0;
 
         }
 
 
-        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber,string ocrBar)
+        public async Task<int> ProcessFile(string path, string web, string endpoint, string ident, string acnumber, string ocrBar, bool splitPdf)
         {
 
             LogTrace(TraceLevel.Verbose, $"Processed file {path}");
+
 
 
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -306,105 +317,48 @@ namespace fileHelper
             web = web.Substring(web.Length - 1) != "/" ? $"{web}/" : web;
 
 
-            HttpClientHandler clientHandler = new HttpClientHandler();
-            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            PdfDocument forSplit = new PdfDocument(new PdfReader(path));
+            int pages = forSplit.GetNumberOfPages();
 
 
-            try
+            if (splitPdf == true && pages > 1)
             {
+                LogTrace(TraceLevel.Verbose, $"Spliting files {filename}");
 
-                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+
+                using (var pdfDoc = new PdfDocument(new PdfReader(path)))
                 {
 
-                    user = "inotify";
-                    password = "pWDxGjr9Df2MUWZQ";
+
+
+
+                    var outputDir = Path.GetDirectoryName(path);
+                    var splitter = new CustomPdfSplitter(pdfDoc);
+                    IList<PdfDocument> splitDocuments = new CustomPdfSplitter(pdfDoc).SplitByPageCount(1);
+
+                    foreach (PdfDocument splittedDoc in splitDocuments)
+                    {
+                        splittedDoc.Close();
+                    }
+
+                    string[] fileEntries = Directory.GetFiles(Path.GetTempPath(), $"*.pdf");
+                    foreach (string fileNameprocess in fileEntries)
+                    {
+                        await ProcessFile(fileNameprocess, web, endpoint, ident, acnumber, ocrBar, false);
+                        if (File.Exists(fileNameprocess))
+                            File.Delete(fileNameprocess);
+                        LogTrace(TraceLevel.Verbose, $"Deleted file {fileNameprocess}");
+                    }
+
+
                 }
 
-                var authenticationString = $"{user}:{password}";
-                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
-
-
-                using (_httpClient = new HttpClient(clientHandler))
-                using (var formData = new MultipartFormDataContent())
-                {
-                    formData.Add(new StringContent(fileName), "file", "file");
-                    formData.Add(new StreamContent(fs), "filebyte", "filebyte");
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(ident))
-                        {
-                            formData.Add(new StringContent(ident), "identifacator");
-                        }
-                        if (!string.IsNullOrEmpty(acnumber))
-                        {
-                            formData.Add(new StringContent(acnumber), "acnumber");
-                        }
-                        if (!string.IsNullOrEmpty(ocrBar))
-                        {
-                            formData.Add(new StringContent(ocrBar), "ocrbar");
-                        }
-
-                    }
-                    catch (Exception)
-                    {
-                        LogTrace(TraceLevel.Verbose, $"No more data parset to file (accesion number, indentificator)");
-                    }
-                   
-
-                    int _timeOut = 5000;
-
-                    try {
-                        _timeOut = timeOut;
-                    }
-                    catch (Exception)
-                    {
-                        _timeOut = 5000;
-                    }
-
-                    if (_timeOut < 100 || _timeOut > 60000)
-                    {
-                        _timeOut = 5000;
-                    }    
-
-                    _httpClient.Timeout = TimeSpan.FromMilliseconds(_timeOut);
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
-
-                    var response = await _httpClient.PostAsync($"{web}{endpoint}", formData);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        LogTrace(TraceLevel.Info, $"Error send fail {fileName}");
-                        LogTrace(TraceLevel.Verbose, $"Error Phrase: {response.ReasonPhrase.ToString()}");
-                        LogTrace(TraceLevel.Verbose, $"Error Request: {response.RequestMessage.ToString()}");
-                        LogTrace(TraceLevel.Verbose, $"Error Content: {response.Content.ToString()}");
-
-                        if (noMoveError is false)
-                        {
-                            //Move error files
-                            try
-                            {
-                                if (File.Exists(Path.Combine(folder, errorFolder, fileName)))
-                                    File.Delete(Path.Combine(folder, errorFolder, fileName));
-
-                                File.Move(path, Path.Combine(folder, errorFolder, fileName));
-                            }
-                            catch (Exception ex)
-                            {
-                                LogTrace(TraceLevel.Verbose, $"Error fail move {path} - {ex}");
-                            }
-                        }
-
-                        return 1;
-                    }
-
-                }
-                LogTrace(TraceLevel.Verbose, $"File {path} sended!");
-                //Move sended files
                 try
                 {
                     if (File.Exists(Path.Combine(folder, doneFolder, fileName)))
                         File.Delete(Path.Combine(folder, doneFolder, fileName));
-                    
-                    File.Move(path, Path.Combine(folder, doneFolder,fileName));
+
+                    File.Move(path, Path.Combine(folder, doneFolder, fileName));
                 }
                 catch (Exception ex)
                 {
@@ -412,9 +366,122 @@ namespace fileHelper
                 }
 
             }
-            catch (Exception ex)
+        
+            else
             {
-                LogTrace(TraceLevel.Verbose, $"General error in {path} - {ex}");
+
+
+                HttpClientHandler clientHandler = new HttpClientHandler();
+                clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+
+
+                try
+                {
+
+                    if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+                    {
+
+                        user = "inotify";
+                        password = "pWDxGjr9Df2MUWZQ";
+                    }
+
+                    var authenticationString = $"{user}:{password}";
+                    var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
+
+
+                    using (_httpClient = new HttpClient(clientHandler))
+                    using (var formData = new MultipartFormDataContent())
+                    {
+                        formData.Add(new StringContent(fileName), "file", "file");
+                        formData.Add(new StreamContent(fs), "filebyte", "filebyte");
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(ident))
+                            {
+                                formData.Add(new StringContent(ident), "identifacator");
+                            }
+                            if (!string.IsNullOrEmpty(acnumber))
+                            {
+                                formData.Add(new StringContent(acnumber), "acnumber");
+                            }
+                            if (!string.IsNullOrEmpty(ocrBar))
+                            {
+                                formData.Add(new StringContent(ocrBar), "ocrbar");
+                            }
+
+                        }
+                        catch (Exception)
+                        {
+                            LogTrace(TraceLevel.Verbose, $"No more data parset to file (accesion number, indentificator)");
+                        }
+
+
+                        int _timeOut = 5000;
+
+                        try
+                        {
+                            _timeOut = timeOut;
+                        }
+                        catch (Exception)
+                        {
+                            _timeOut = 5000;
+                        }
+
+                        if (_timeOut < 100 || _timeOut > 60000)
+                        {
+                            _timeOut = 5000;
+                        }
+
+                        _httpClient.Timeout = TimeSpan.FromMilliseconds(_timeOut);
+                        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
+
+                        var response = await _httpClient.PostAsync($"{web}{endpoint}", formData);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            LogTrace(TraceLevel.Info, $"Error send fail {fileName}");
+                            LogTrace(TraceLevel.Verbose, $"Error Phrase: {response.ReasonPhrase.ToString()}");
+                            LogTrace(TraceLevel.Verbose, $"Error Request: {response.RequestMessage.ToString()}");
+                            LogTrace(TraceLevel.Verbose, $"Error Content: {response.Content.ToString()}");
+
+                            if (noMoveError is false)
+                            {
+                                //Move error files
+                                try
+                                {
+                                    if (File.Exists(Path.Combine(folder, errorFolder, fileName)))
+                                        File.Delete(Path.Combine(folder, errorFolder, fileName));
+
+                                    File.Move(path, Path.Combine(folder, errorFolder, fileName));
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogTrace(TraceLevel.Verbose, $"Error fail move {path} - {ex}");
+                                }
+                            }
+
+                            return 1;
+                        }
+
+                    }
+                    LogTrace(TraceLevel.Verbose, $"File {path} sended!");
+                    //Move sended files
+                    try
+                    {
+                        if (File.Exists(Path.Combine(folder, doneFolder, fileName)))
+                            File.Delete(Path.Combine(folder, doneFolder, fileName));
+
+                        File.Move(path, Path.Combine(folder, doneFolder, fileName));
+                    }
+                    catch (Exception ex)
+                    {
+                        LogTrace(TraceLevel.Verbose, $"Error fail move {path} - {ex}");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    LogTrace(TraceLevel.Verbose, $"General error in {path} - {ex}");
+                }
             }
 
             /* var request = new HttpRequestMessage
@@ -429,7 +496,7 @@ namespace fileHelper
          result.Content.CopyToAsync(ms).Wait();
          LogTrace(TraceLevel.Verbose, $"Výsledek {result.IsSuccessStatusCode}");
             */
-            
+
             return 0;
 
 
@@ -437,10 +504,32 @@ namespace fileHelper
 
         }
     }
-}
 
-public enum TraceLevel
-{
-    Info = 0,
-    Verbose,
+
+    public enum TraceLevel
+    {
+        Info = 0,
+        Verbose,
+    }
+
+    class CustomPdfSplitter : PdfSplitter
+    {
+        int _partNumber = 1;
+
+        public CustomPdfSplitter(PdfDocument pdfDocument) : base(pdfDocument)
+        {
+        }
+
+        protected override PdfWriter GetNextPdfWriter(PageRange documentPageRange)
+        {
+            try
+            {
+                return new PdfWriter(Path.GetTempPath() + _partNumber++ + "send.pdf");
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new SystemException();
+            }
+        }
+    }
 }
