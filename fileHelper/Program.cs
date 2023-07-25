@@ -138,7 +138,7 @@ namespace fileHelper
             }
 
 
-
+            
 
             if (!Directory.Exists(Path.Combine(folder, doneFolder)))
             {
@@ -319,7 +319,10 @@ namespace fileHelper
             string fileName = Path.GetFileName(path);
             web = web.Substring(web.Length - 1) != "/" ? $"{web}/" : web;
 
+            try
+            {
 
+            
             PdfDocument forSplit = new PdfDocument(new PdfReader(path));
             int pages = forSplit.GetNumberOfPages();
 
@@ -490,6 +493,8 @@ namespace fileHelper
                     LogTrace(TraceLevel.Verbose, $"General error in {path} - {ex}");
                 }
             }
+            
+
 
             /* var request = new HttpRequestMessage
              {
@@ -506,7 +511,12 @@ namespace fileHelper
 
             return 0;
 
-
+            }
+            catch (Exception ex)
+            { 
+                LogTrace(TraceLevel.Verbose, $"Error - {ex}");
+                return 0;
+            }
 
 
         }
