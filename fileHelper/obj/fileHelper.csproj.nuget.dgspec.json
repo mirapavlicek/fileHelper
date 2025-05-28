@@ -50,11 +50,15 @@
             },
             "System.Security.Permissions": {
               "target": "Package",
-              "version": "[9.0.2, )"
+              "version": "[9.0.5, )"
             },
             "itext7": {
               "target": "Package",
-              "version": "[9.1.0, )"
+              "version": "[9.2.0, )"
+            },
+            "itext7.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[9.2.0, )"
             }
           },
           "imports": [

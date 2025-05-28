@@ -2,7 +2,7 @@
   "profiles": {
     "fileHelper": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\inotify\\data --trace:verbose --infinity:1 --recoursive --delay:1000"
+      "commandLineArgs": "/Users/mira/Downloads/pdfTest/ --web https://hood.nnh.local/api/rest/inotify --trace:verbose --infinity:1 --recoursive --delay:1000 --splitpdf"
     }
   }
 }

@@ -14,6 +14,8 @@ using iText;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
 using iText.Pdfa;
+using iText.Bouncycastle;
+using iText.Bouncycastleconnector;
 using System.Collections.Generic;
 using Microsoft.VisualBasic.FileIO;
 
